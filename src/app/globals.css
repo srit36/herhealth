@@ -1,23 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap");
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
 :root {
-  font-family: "DM Sans", sans-serif;
-  color: #182724;
-  background: #f5f7f4;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-canvas);
   font-synthesis: none;
-  --ink: #182724;
-  --muted: #65736f;
-  --faint: #8a9692;
-  --line: #dfe6e2;
-  --surface: #ffffff;
-  --canvas: #f5f7f4;
-  --teal: #176c63;
-  --teal-dark: #10584f;
-  --teal-soft: #e7f1ee;
-  --sage: #9ebcb1;
-  --sand: #f3eee4;
-  --sidebar: #102b28;
+
+  /* Legacy names used throughout this file; aliases of the tokens. */
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --faint: var(--color-faint);
+  --line: var(--color-line);
+  --surface: var(--color-surface);
+  --canvas: var(--color-canvas);
+  --teal: var(--color-teal);
+  --teal-dark: var(--color-teal-dark);
+  --teal-soft: var(--color-teal-soft);
+  --sage: var(--color-sage);
+  --sand: var(--color-sand);
+  --sidebar: var(--color-sidebar);
 }
 
 * {
@@ -31,13 +33,18 @@ body {
   background: var(--canvas);
 }
 
-button {
-  font: inherit;
-}
+/*
+ * Base-layer rules can be overridden by Tailwind utilities.
+ */
+@layer base {
+  button {
+    font: inherit;
+  }
 
-button:focus-visible {
-  outline: 3px solid rgba(23, 108, 99, 0.24);
-  outline-offset: 2px;
+  button:focus-visible {
+    outline: 3px solid rgba(23, 108, 99, 0.24);
+    outline-offset: 2px;
+  }
 }
 
 .app-shell {
@@ -300,15 +307,18 @@ button:focus-visible {
   letter-spacing: 0.13em;
 }
 
-h1,
-h2,
-p {
-  margin: 0;
-}
+/* Base-layer rules can be overridden by Tailwind utilities. */
+@layer base {
+  h1,
+  h2,
+  p {
+    margin: 0;
+  }
 
-h1,
-h2 {
-  font-family: "Manrope", sans-serif;
+  h1,
+  h2 {
+    font-family: "Manrope", sans-serif;
+  }
 }
 
 .page-heading h1 {

@@ -1,0 +1,46 @@
+/*
+ * Design tokens: the single source of truth for colours, fonts, radii and
+ * shadows. Tailwind generates utilities from these (bg-teal, text-muted,
+ * rounded-card, shadow-card ...). The older CSS variables used throughout
+ * globals.css (--ink, --teal ...) are aliases of these tokens.
+ *
+ * `static` makes Tailwind always emit the variables, so the aliases in
+ * globals.css keep working even when no utility uses a given token.
+ */
+@theme static {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+
+  /* Neutrals */
+  --color-ink: #182724;
+  --color-muted: #65736f;
+  --color-faint: #8a9692; /* 3.06:1 on white: fails WCAG AA for text. Do not use for new text. */
+  --color-line: #dfe6e2;
+  --color-surface: #ffffff;
+  --color-canvas: #f5f7f4;
+  --color-sidebar: #102b28;
+
+  /* Brand */
+  --color-teal: #176c63;
+  --color-teal-dark: #10584f;
+  --color-teal-soft: #e7f1ee;
+  --color-teal-line: #b9d1ca;
+  --color-sage: #9ebcb1;
+  --color-sand: #f3eee4;
+
+  /* Status */
+  --color-danger: #99584d;
+  --color-danger-soft: #f8ecea;
+  --color-warn: #806d4e;
+  --color-warn-strong: #6f5d3f;
+
+  /* Shape */
+  --radius-control: 9px;
+  --radius-field: 10px;
+  --radius-card: 16px;
+  --radius-pill: 20px;
+
+  /* Elevation */
+  --shadow-card: 0 6px 22px rgba(22, 55, 49, 0.035);
+  --shadow-button: 0 5px 12px rgba(23, 108, 99, 0.17);
+}
