@@ -11,15 +11,20 @@ period tracking, a health timeline, a document vault, and an AI companion.
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript
-- Tailwind CSS v4
+- Tailwind CSS v4, with design tokens in `src/styles/tokens.css`
+- Fonts (DM Sans, Manrope) self-hosted through `@fontsource`, so no request is
+  made to a third-party font service
+- Vitest + Testing Library for tests
 - ESLint + Prettier
 
 Planned in later phases: Supabase (Postgres), Prisma, authentication, an LLM
-provider for the AI features, and Vercel for deployment.
+provider for the AI features, and Vercel for deployment. See
+`docs/DECISIONS.md` for the reasoning and `docs/AI_SAFETY_RULES.md` for the AI
+rules.
 
 ## Getting started
 
-Requires Node.js 20.9.0 or newer.
+Requires Node.js 20.19 or newer (22 LTS recommended).
 
 ```bash
 npm install
@@ -29,27 +34,48 @@ npm run dev                  # http://localhost:3000
 
 ## Scripts
 
-| Command                | What it does                                                 |
-| ---------------------- | ------------------------------------------------------------ |
-| `npm run dev`          | Start the dev server                                         |
-| `npm run build`        | Production build                                             |
-| `npm run start`        | Serve the production build                                   |
-| `npm run lint`         | ESLint                                                       |
-| `npm run typecheck`    | TypeScript, no emit                                          |
-| `npm run format`       | Format everything with Prettier                              |
-| `npm run format:check` | Check formatting without changing files                      |
-| `npm run verify`       | Typecheck + lint + format check + build (run before pushing) |
+| Command                | What it does                                                        |
+| ---------------------- | ------------------------------------------------------------------- |
+| `npm run dev`          | Start the dev server                                                |
+| `npm run build`        | Production build                                                    |
+| `npm run start`        | Serve the production build                                          |
+| `npm run lint`         | ESLint                                                              |
+| `npm run typecheck`    | TypeScript, no emit                                                 |
+| `npm run test`         | Run all tests once                                                  |
+| `npm run test:watch`   | Re-run tests as files change                                        |
+| `npm run format`       | Format everything with Prettier                                     |
+| `npm run format:check` | Check formatting without changing files                             |
+| `npm run verify`       | Typecheck, lint, format check, tests and build (run before pushing) |
 
 ## Project layout
 
-| Path                  | Purpose                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `src/app/(app)/`      | Signed-in pages that share the sidebar and top bar             |
-| `src/app/(auth)/`     | `/sign-up`, `/login`, `/consent` (no sidebar)                  |
-| `src/app/globals.css` | The design's global CSS (to be split and tokenised in Phase 2) |
-| `src/components/`     | Shared UI (`AppShell`, `Icon`, `Toggle`, `companion/`)         |
-| `src/lib/`            | Navigation, routes, helpers                                    |
-| `src/mock/`           | Placeholder data and shared types, removed page by page        |
+| Path                  | Purpose                                                           |
+| --------------------- | ----------------------------------------------------------------- |
+| `docs/`               | Decisions and AI safety rules                                     |
+| `src/app/(app)/`      | Signed-in pages that share the sidebar and top bar                |
+| `src/app/(auth)/`     | `/sign-up`, `/login`, `/consent` (no sidebar)                     |
+| `src/app/(dev)/`      | Developer-only pages; `/design-system` is a 404 in production     |
+| `src/app/globals.css` | The design's page-level CSS (to be split up as pages are rebuilt) |
+| `src/styles/`         | `tokens.css`: colours, fonts, radii and shadows (single source)   |
+| `src/components/ui/`  | Base components: Button, Card, StatTile, Badge and form fields    |
+| `src/components/`     | Other shared UI (`AppShell`, `Icon`, `Toggle`, `companion/`)      |
+| `src/lib/`            | Navigation, routes, helpers                                       |
+| `src/mock/`           | Placeholder data and shared types, removed page by page           |
+
+## Design system
+
+- Colours, fonts, radii and shadows are defined once in `src/styles/tokens.css`.
+  Tailwind turns them into utilities such as `bg-teal`, `text-muted`,
+  `rounded-card` and `shadow-card`. The older CSS variables in `globals.css`
+  (`--ink`, `--teal` ...) are aliases of those tokens.
+- Build new UI from the components in `src/components/ui/`. Import them from
+  `@/components/ui`.
+- Run `npm run dev` and open `/design-system` to see every component.
+- Element-level rules in `globals.css` (`button`, `h1`, `h2`, `p`) sit in the
+  `base` cascade layer so Tailwind utilities such as `mt-4` can override them.
+  Keep any new global element rules inside `@layer base`.
+- `--color-faint` fails the WCAG AA contrast minimum for text. Use `text-muted`
+  for new text.
 
 ## Notes for contributors
 
@@ -57,5 +83,6 @@ npm run dev                  # http://localhost:3000
   tools) to read `node_modules/next/dist/docs/` before relying on memory of older
   Next.js versions. Keep them committed.
 - Never commit `.env.local` or any real secret. Only `.env.example` is tracked.
+- Line endings are LF (see `.gitattributes`).
 - The layout is desktop-only for now (`body { min-width: 1180px }`); mobile
   layout is planned for the hardening phase.
