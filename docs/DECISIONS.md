@@ -84,7 +84,7 @@ Notes:
 | Framework    | Next.js 16 App Router, React 19, TypeScript               | Already in the repo and verified                                 |
 | Styling      | Tailwind v4 with an `@theme` block in CSS                 | v4 has no `tailwind.config.ts`; tokens live in CSS               |
 | Database     | Supabase Postgres                                         | Managed Postgres with backups; named in the roadmap              |
-| ORM          | Prisma, with migrations committed to git                  | Typed queries and versioned schema changes                       |
+| ORM          | Prisma 7 (`prisma-client` generator, `pg` driver adapter), migrations committed to git | Typed queries and versioned schema changes |
 | Auth         | Supabase Auth, cookie-based sessions                      | Managed password hashing, email verification, reset and sessions |
 | Validation   | zod on every API input                                    | One schema per route, shared with the client where useful        |
 | File storage | Supabase Storage, private bucket, short-lived signed URLs | No public document URLs                                          |
@@ -138,3 +138,36 @@ and the renamed `proxy` file convention (see `AGENTS.md`).
 
 A phase is finished only when `npm run verify` passes and the tests listed for
 that phase pass. Anything not yet tested is reported as not tested.
+
+## 8. Implementation notes
+
+Decisions made while building, kept here so they are not rediscovered.
+
+### Phase 3 (database)
+
+- **Prisma 7 layout.** The connection URL is not in `schema.prisma`. Migrations use
+  `DIRECT_URL` through `prisma.config.ts`; the running app uses the pooled
+  `DATABASE_URL` through a `pg` driver adapter in `src/lib/prisma.ts`. The generated
+  client lives in `src/generated/prisma` and is git-ignored (rebuilt by the
+  `postinstall` script).
+- **`profiles.id` is the Supabase Auth user id.** There is deliberately no foreign
+  key to the `auth` schema: Prisma does not manage that schema and a cross-schema key
+  shows up as drift in `migrate dev`. Account deletion removes rows explicitly
+  (Phase 5), then the auth user.
+- **Tables exist only for what has been built.** v1 tables for periods, nutrition,
+  consultations, documents and AI messages are added by the phase that builds them,
+  each with Row Level Security enabled in the same migration.
+- **Reference data is seeded, not hardcoded in pages.** The symptom list lives in
+  `prisma/reference-data.ts`, is upserted into `symptom_types`, and is read through
+  the API. Free-text symptoms use the `other` type plus a `custom_label` on the
+  person's own check-in.
+- **Rate limiting is stored in Postgres** (`rate_limit_hits`, fixed windows), because
+  in-memory counters do not work across serverless instances.
+- **Hand-written migrations.** Raw SQL (RLS, CHECK constraints) lives in a separate
+  migration from the generated one, so the generated one can be regenerated cleanly.
+
+### Pages still on placeholder data
+
+Replaced in the phase that owns them (see the roadmap): Insights (8), Companion
+(7 and 8), Vault (8), Periods (9), Nutrition & Lifestyle (9), Consultation (9).
+
