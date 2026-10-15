@@ -8,6 +8,7 @@ export const AUTH_ONLY_ANONYMOUS_PATHS = [
   '/login',
   '/sign-up',
   '/forgot-password',
+  '/verify-email',
 ];
 
 /** Pages reachable without a session. */
