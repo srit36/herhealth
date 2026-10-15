@@ -79,17 +79,17 @@ Notes:
 
 ## 4. Stack
 
-| Concern      | Decision                                                  | Why                                                              |
-| ------------ | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| Framework    | Next.js 16 App Router, React 19, TypeScript               | Already in the repo and verified                                 |
-| Styling      | Tailwind v4 with an `@theme` block in CSS                 | v4 has no `tailwind.config.ts`; tokens live in CSS               |
-| Database     | Supabase Postgres                                         | Managed Postgres with backups; named in the roadmap              |
-| ORM          | Prisma 7 (`prisma-client` generator, `pg` driver adapter), migrations committed to git | Typed queries and versioned schema changes |
-| Auth         | Supabase Auth, cookie-based sessions                      | Managed password hashing, email verification, reset and sessions |
-| Validation   | zod on every API input                                    | One schema per route, shared with the client where useful        |
-| File storage | Supabase Storage, private bucket, short-lived signed URLs | No public document URLs                                          |
-| LLM          | Provider chosen in Phase 7 behind a single wrapper        | Keeps the provider replaceable                                   |
-| Hosting      | Vercel                                                    | Named in the roadmap                                             |
+| Concern      | Decision                                                                               | Why                                                              |
+| ------------ | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Framework    | Next.js 16 App Router, React 19, TypeScript                                            | Already in the repo and verified                                 |
+| Styling      | Tailwind v4 with an `@theme` block in CSS                                              | v4 has no `tailwind.config.ts`; tokens live in CSS               |
+| Database     | Supabase Postgres                                                                      | Managed Postgres with backups; named in the roadmap              |
+| ORM          | Prisma 7 (`prisma-client` generator, `pg` driver adapter), migrations committed to git | Typed queries and versioned schema changes                       |
+| Auth         | Supabase Auth, cookie-based sessions                                                   | Managed password hashing, email verification, reset and sessions |
+| Validation   | zod on every API input                                                                 | One schema per route, shared with the client where useful        |
+| File storage | Supabase Storage, private bucket, short-lived signed URLs                              | No public document URLs                                          |
+| LLM          | Provider chosen in Phase 7 behind a single wrapper                                     | Keeps the provider replaceable                                   |
+| Hosting      | Vercel                                                                                 | Named in the roadmap                                             |
 
 To be verified when each phase starts, because this repo's Next.js version is newer
 than most published guidance: Supabase's server-side auth package with Next.js 16,
@@ -170,4 +170,3 @@ Decisions made while building, kept here so they are not rediscovered.
 
 Replaced in the phase that owns them (see the roadmap): Insights (8), Companion
 (7 and 8), Vault (8), Periods (9), Nutrition & Lifestyle (9), Consultation (9).
-

@@ -13,10 +13,16 @@ const baseHeaders = {
   'X-Content-Type-Options': 'nosniff',
 };
 
-export function json<T>(data: T, init: { status?: number; headers?: HeadersInit } = {}) {
+export function json<T>(
+  data: T,
+  init: { status?: number; headers?: HeadersInit } = {},
+) {
   return Response.json(data, {
     status: init.status ?? 200,
-    headers: { ...baseHeaders, ...(init.headers as Record<string, string> | undefined) },
+    headers: {
+      ...baseHeaders,
+      ...(init.headers as Record<string, string> | undefined),
+    },
   });
 }
 
@@ -26,7 +32,8 @@ export function errorResponse(error: unknown, routeName: string): Response {
       error: { code: error.code, message: error.message, fields: error.fields },
     };
     const headers: Record<string, string> = {};
-    if (error.retryAfterSeconds) headers['Retry-After'] = String(error.retryAfterSeconds);
+    if (error.retryAfterSeconds)
+      headers['Retry-After'] = String(error.retryAfterSeconds);
     return json(body, { status: error.status, headers });
   }
 
@@ -45,7 +52,10 @@ export function errorResponse(error: unknown, routeName: string): Response {
   // Unknown failure: log the error NAME only and answer with a generic message.
   logError('api.unhandled', error, { route: routeName });
   const body: ApiErrorBody = {
-    error: { code: 'server_error', message: 'Something went wrong. Please try again.' },
+    error: {
+      code: 'server_error',
+      message: 'Something went wrong. Please try again.',
+    },
   };
   return json(body, { status: 500 });
 }

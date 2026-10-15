@@ -40,7 +40,10 @@ import {
 const HOUR = 60 * 60;
 const FIFTEEN_MINUTES = 15 * 60;
 
-function failure(message: string, extra: Partial<ActionState> = {}): ActionState {
+function failure(
+  message: string,
+  extra: Partial<ActionState> = {},
+): ActionState {
   return { status: 'error', message, ...extra };
 }
 
@@ -70,7 +73,11 @@ export async function signUpAction(
   const limit = await enforceRateLimits([
     { key: `signup:ip:${ip}`, limit: 10, windowSeconds: HOUR },
     // Stops the form being used to flood one address with verification emails.
-    { key: `signup:email:${hashKeyPart(email)}`, limit: 5, windowSeconds: HOUR },
+    {
+      key: `signup:email:${hashKeyPart(email)}`,
+      limit: 5,
+      windowSeconds: HOUR,
+    },
   ]);
   if (!limit.allowed) return failure(waitMessage(limit.retryAfterSeconds));
 
@@ -155,10 +162,13 @@ export async function loginAction(
 
   if (error) {
     if (error.code === 'email_not_confirmed') {
-      return failure('Please confirm your email address first. Check your inbox for the link.', {
-        needsVerification: true,
-        email: parsed.data.email,
-      });
+      return failure(
+        'Please confirm your email address first. Check your inbox for the link.',
+        {
+          needsVerification: true,
+          email: parsed.data.email,
+        },
+      );
     }
     if (error.code !== 'invalid_credentials') {
       logError('auth.login_failed', error, { code: error.code ?? 'unknown' });
@@ -184,17 +194,24 @@ export async function resendVerificationAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = emailOnlySchema.safeParse({ email: normalizeEmail(formData.get('email')) });
+  const parsed = emailOnlySchema.safeParse({
+    email: normalizeEmail(formData.get('email')),
+  });
   const genericOk: ActionState = {
     status: 'success',
-    message: 'If that address is waiting for confirmation, we have sent a new link.',
+    message:
+      'If that address is waiting for confirmation, we have sent a new link.',
   };
   if (!parsed.success) return genericOk;
 
   const ip = await getClientIp();
   const limit = await enforceRateLimits([
     { key: `resend:ip:${ip}`, limit: 5, windowSeconds: HOUR },
-    { key: `resend:email:${hashKeyPart(parsed.data.email)}`, limit: 3, windowSeconds: HOUR },
+    {
+      key: `resend:email:${hashKeyPart(parsed.data.email)}`,
+      limit: 3,
+      windowSeconds: HOUR,
+    },
   ]);
   if (!limit.allowed) return failure(waitMessage(limit.retryAfterSeconds));
 
@@ -204,7 +221,8 @@ export async function resendVerificationAction(
     email: parsed.data.email,
     options: { emailRedirectTo: `${appUrl()}/auth/confirm` },
   });
-  if (error) logError('auth.resend_failed', error, { code: error.code ?? 'unknown' });
+  if (error)
+    logError('auth.resend_failed', error, { code: error.code ?? 'unknown' });
   return genericOk;
 }
 
@@ -212,23 +230,37 @@ export async function forgotPasswordAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = emailOnlySchema.safeParse({ email: normalizeEmail(formData.get('email')) });
+  const parsed = emailOnlySchema.safeParse({
+    email: normalizeEmail(formData.get('email')),
+  });
   if (!parsed.success) {
-    return failure('Enter a valid email address.', { fieldErrors: fieldErrors(parsed.error) });
+    return failure('Enter a valid email address.', {
+      fieldErrors: fieldErrors(parsed.error),
+    });
   }
 
   const ip = await getClientIp();
   const limit = await enforceRateLimits([
     { key: `reset:ip:${ip}`, limit: 5, windowSeconds: HOUR },
-    { key: `reset:email:${hashKeyPart(parsed.data.email)}`, limit: 3, windowSeconds: HOUR },
+    {
+      key: `reset:email:${hashKeyPart(parsed.data.email)}`,
+      limit: 3,
+      windowSeconds: HOUR,
+    },
   ]);
   if (!limit.allowed) return failure(waitMessage(limit.retryAfterSeconds));
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${appUrl()}/auth/confirm?next=/reset-password`,
-  });
-  if (error) logError('auth.reset_request_failed', error, { code: error.code ?? 'unknown' });
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    parsed.data.email,
+    {
+      redirectTo: `${appUrl()}/auth/confirm?next=/reset-password`,
+    },
+  );
+  if (error)
+    logError('auth.reset_request_failed', error, {
+      code: error.code ?? 'unknown',
+    });
 
   // Same answer whether or not the address has an account.
   return {
@@ -259,7 +291,9 @@ export async function resetPasswordAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
   if (error) {
     if (error.code === 'same_password') {
       return failure('Choose a password you have not used on this account.', {
@@ -314,8 +348,14 @@ export async function submitConsentAction(
     );
   }
 
-  const rawName = typeof user.metadata.display_name === 'string' ? user.metadata.display_name.trim() : '';
-  const displayName = (rawName || user.email?.split('@')[0] || 'there').slice(0, 80);
+  const rawName =
+    typeof user.metadata.display_name === 'string'
+      ? user.metadata.display_name.trim()
+      : '';
+  const displayName = (rawName || user.email?.split('@')[0] || 'there').slice(
+    0,
+    80,
+  );
   const rawZone = user.metadata.time_zone;
   const timeZone = isValidTimeZone(rawZone) ? rawZone : 'UTC';
 

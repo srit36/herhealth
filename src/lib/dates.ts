@@ -16,7 +16,10 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export function isDateString(value: unknown): value is DateString {
   if (typeof value !== 'string' || !DATE_PATTERN.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
-  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  return (
+    !Number.isNaN(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 10) === value
+  );
 }
 
 /** True when the name is a time zone this runtime knows (for example "Asia/Kolkata"). */
@@ -33,7 +36,10 @@ export function isValidTimeZone(value: unknown): value is string {
 }
 
 /** The calendar date it is right now in `timeZone`. */
-export function todayInZone(timeZone: string, now: Date = new Date()): DateString {
+export function todayInZone(
+  timeZone: string,
+  now: Date = new Date(),
+): DateString {
   // The en-CA locale formats dates as YYYY-MM-DD.
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -78,7 +84,10 @@ export function fromDbDate(date: Date): DateString {
 }
 
 /** "Monday, 5 October" style label for the top bar, in the person's zone. */
-export function formatTodayLabel(timeZone: string, now: Date = new Date()): string {
+export function formatTodayLabel(
+  timeZone: string,
+  now: Date = new Date(),
+): string {
   return new Intl.DateTimeFormat('en-US', {
     timeZone,
     weekday: 'long',
@@ -95,9 +104,10 @@ export function formatCalendarDate(
   date: DateString,
   options: Intl.DateTimeFormatOptions,
 ): string {
-  return new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'UTC' }).format(
-    new Date(`${date}T00:00:00.000Z`),
-  );
+  return new Intl.DateTimeFormat('en-US', {
+    ...options,
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T00:00:00.000Z`));
 }
 
 export function greetingFor(hour: number): 'morning' | 'afternoon' | 'evening' {

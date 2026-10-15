@@ -29,10 +29,16 @@ export function windowStartFor(nowMs: number, windowSeconds: number): number {
 
 /** A short, stable, non-reversible token for use inside a rate-limit key. */
 export function hashKeyPart(value: string): string {
-  return createHash('sha256').update(value.trim().toLowerCase()).digest('hex').slice(0, 32);
+  return createHash('sha256')
+    .update(value.trim().toLowerCase())
+    .digest('hex')
+    .slice(0, 32);
 }
 
-async function consume(rule: RateLimitRule, now: Date): Promise<RateLimitResult> {
+async function consume(
+  rule: RateLimitRule,
+  now: Date,
+): Promise<RateLimitResult> {
   const windowStartMs = windowStartFor(now.getTime(), rule.windowSeconds);
   const windowStart = new Date(windowStartMs);
 
@@ -50,7 +56,10 @@ async function consume(rule: RateLimitRule, now: Date): Promise<RateLimitResult>
   const windowEndMs = windowStartMs + rule.windowSeconds * 1000;
   return {
     allowed: false,
-    retryAfterSeconds: Math.max(1, Math.ceil((windowEndMs - now.getTime()) / 1000)),
+    retryAfterSeconds: Math.max(
+      1,
+      Math.ceil((windowEndMs - now.getTime()) / 1000),
+    ),
   };
 }
 

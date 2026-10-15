@@ -31,7 +31,11 @@ export async function requireApiUser(request: Request): Promise<ApiUser> {
   if (state.status === 'anonymous') throw ApiError.unauthorized();
   if (state.status === 'needs-consent') throw ApiError.consentRequired();
 
-  return { userId: state.user.id, email: state.user.email, profile: state.profile };
+  return {
+    userId: state.user.id,
+    email: state.user.email,
+    profile: state.profile,
+  };
 }
 
 /** Per-user limit for expensive or sensitive endpoints (export, delete, AI). */

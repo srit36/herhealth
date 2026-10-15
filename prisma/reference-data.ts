@@ -17,12 +17,27 @@ export type SymptomSeed = {
 };
 
 export const symptomSeeds: SymptomSeed[] = [
-  { slug: 'headache', label: 'Headache', useInCheckIn: true, useInPeriods: true },
+  {
+    slug: 'headache',
+    label: 'Headache',
+    useInCheckIn: true,
+    useInPeriods: true,
+  },
   { slug: 'cramps', label: 'Cramps', useInCheckIn: true, useInPeriods: true },
   { slug: 'fatigue', label: 'Fatigue', useInCheckIn: true, useInPeriods: true },
-  { slug: 'bloating', label: 'Bloating', useInCheckIn: true, useInPeriods: true },
+  {
+    slug: 'bloating',
+    label: 'Bloating',
+    useInCheckIn: true,
+    useInPeriods: true,
+  },
   { slug: 'nausea', label: 'Nausea', useInCheckIn: true, useInPeriods: false },
-  { slug: 'back-pain', label: 'Back pain', useInCheckIn: true, useInPeriods: true },
+  {
+    slug: 'back-pain',
+    label: 'Back pain',
+    useInCheckIn: true,
+    useInPeriods: true,
+  },
   {
     slug: 'breast-tenderness',
     label: 'Breast tenderness',

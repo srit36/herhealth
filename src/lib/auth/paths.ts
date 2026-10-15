@@ -4,7 +4,11 @@
  */
 
 /** Pages a signed-in person has no reason to see: they are sent to Home. */
-export const AUTH_ONLY_ANONYMOUS_PATHS = ['/login', '/sign-up', '/forgot-password'];
+export const AUTH_ONLY_ANONYMOUS_PATHS = [
+  '/login',
+  '/sign-up',
+  '/forgot-password',
+];
 
 /** Pages reachable without a session. */
 const PUBLIC_PATHS = [...AUTH_ONLY_ANONYMOUS_PATHS, '/auth/confirm'];

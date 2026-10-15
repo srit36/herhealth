@@ -11,9 +11,15 @@ export function logEvent(event: string, fields: LogFields = {}): void {
   console.info(JSON.stringify({ level: 'info', event, ...fields }));
 }
 
-export function logError(event: string, error: unknown, fields: LogFields = {}): void {
+export function logError(
+  event: string,
+  error: unknown,
+  fields: LogFields = {},
+): void {
   // Only the error's name and a short code, never its message: messages from
   // database and auth libraries can echo input values.
   const name = error instanceof Error ? error.name : typeof error;
-  console.error(JSON.stringify({ level: 'error', event, error: name, ...fields }));
+  console.error(
+    JSON.stringify({ level: 'error', event, error: name, ...fields }),
+  );
 }

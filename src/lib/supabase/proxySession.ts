@@ -23,7 +23,9 @@ import { hardenCookieOptions } from '@/lib/supabase/cookies';
  * route handler and server action checks the session again itself
  * (src/lib/auth/session.ts, src/lib/api/guard.ts).
  */
-export async function updateSession(request: NextRequest): Promise<NextResponse> {
+export async function updateSession(
+  request: NextRequest,
+): Promise<NextResponse> {
   let response = NextResponse.next({ request });
   const { url, publishableKey } = supabaseConfig();
 
@@ -50,7 +52,9 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   const { pathname, search } = request.nextUrl;
 
   const redirectTo = (target: string): NextResponse => {
-    const redirectResponse = NextResponse.redirect(new URL(target, request.url));
+    const redirectResponse = NextResponse.redirect(
+      new URL(target, request.url),
+    );
     // Keep any refreshed session cookies on the redirect.
     for (const cookie of response.cookies.getAll()) {
       redirectResponse.cookies.set(cookie);
@@ -65,7 +69,9 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     if (isPublicPath(pathname)) return response;
     if (pathname === '/reset-password') return redirectTo('/forgot-password');
     const next = safeNextPath(`${pathname}${search}`, '/');
-    return redirectTo(next === '/' ? '/login' : `/login?next=${encodeURIComponent(next)}`);
+    return redirectTo(
+      next === '/' ? '/login' : `/login?next=${encodeURIComponent(next)}`,
+    );
   }
 
   if (isAnonymousOnlyPath(pathname)) return redirectTo('/');

@@ -18,7 +18,9 @@ const migrationFolders = readdirSync(migrationsDir, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 const allSql = migrationFolders
-  .map((folder) => readFileSync(join(migrationsDir, folder, 'migration.sql'), 'utf8'))
+  .map((folder) =>
+    readFileSync(join(migrationsDir, folder, 'migration.sql'), 'utf8'),
+  )
   .join('\n');
 
 const tableNames = [...schema.matchAll(/@@map\("([a-z_]+)"\)/g)]
@@ -54,7 +56,10 @@ describe('schema and migrations', () => {
     for (const folder of migrationFolders) {
       expect(folder).toMatch(/^\d{14}_[a-z0-9_]+$/);
     }
-    const lock = readFileSync(join(migrationsDir, 'migration_lock.toml'), 'utf8');
+    const lock = readFileSync(
+      join(migrationsDir, 'migration_lock.toml'),
+      'utf8',
+    );
     expect(lock).toContain('provider = "postgresql"');
   });
 

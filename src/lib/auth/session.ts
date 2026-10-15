@@ -66,7 +66,9 @@ function findProfile(id: string) {
 }
 
 /** A row of the `profiles` table (type derived from the query, not imported). */
-export type ProfileRecord = NonNullable<Awaited<ReturnType<typeof findProfile>>>;
+export type ProfileRecord = NonNullable<
+  Awaited<ReturnType<typeof findProfile>>
+>;
 
 export type AppUserState =
   | { status: 'anonymous' }

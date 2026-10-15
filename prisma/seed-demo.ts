@@ -100,8 +100,14 @@ async function main() {
       // Skip about one day in five so streaks and gaps both appear.
       if (random() < 0.2) continue;
       const date = addDays(today, -offset);
-      const sleepMinutes = Math.round(clamp(420 + (random() - 0.5) * 240, 240, 600));
-      const sleepQuality = clamp(Math.round(sleepMinutes / 120 + random() - 0.5), 1, 5);
+      const sleepMinutes = Math.round(
+        clamp(420 + (random() - 0.5) * 240, 240, 600),
+      );
+      const sleepQuality = clamp(
+        Math.round(sleepMinutes / 120 + random() - 0.5),
+        1,
+        5,
+      );
       const symptomCount = random() < 0.45 ? 1 + Math.floor(random() * 2) : 0;
       const picked = [...types]
         .sort(() => random() - 0.5)
