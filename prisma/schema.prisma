@@ -1,0 +1,148 @@
+// HerHealth database schema (Prisma 7, PostgreSQL on Supabase).
+//
+// Conventions
+// - Table and column names are snake_case in the database (@@map / @map);
+//   Prisma models and fields stay camelCase in code.
+// - `profiles.id` equals the Supabase Auth user id (auth.users.id). There is no
+//   foreign key to the `auth` schema: Prisma does not manage it, and a cross-schema
+//   key would show up as drift in `prisma migrate dev`. Account deletion removes
+//   the rows explicitly (see src/server/account.ts).
+// - Every user-owned table carries `user_id`, and every query in the app filters
+//   by it (docs/DECISIONS.md section 5).
+// - Row Level Security is enabled on every table in the second migration.
+// - Rating scales are stored as integers 1 to 5; labels live in src/lib/scales.ts.
+//
+// The connection URL is NOT set here. It lives in prisma.config.ts (migrations)
+// and src/lib/prisma.ts (runtime, through a driver adapter).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ConsentType {
+  TERMS
+  HEALTH_DATA
+  AI
+  RESEARCH
+
+  @@map("consent_type")
+}
+
+enum Severity {
+  MILD
+  MODERATE
+  SEVERE
+
+  @@map("severity")
+}
+
+/// One row per signed-up person who has completed the consent step.
+model Profile {
+  /// Same value as the Supabase Auth user id.
+  id                    String   @id @db.Uuid
+  displayName           String   @map("display_name") @db.VarChar(80)
+  /// IANA time zone name, for example "Asia/Kolkata".
+  timeZone              String   @map("time_zone") @db.VarChar(64)
+  /// ISO 3166-1 alpha-2, optional. Used for region-aware emergency numbers (Phase 6).
+  countryCode           String?  @map("country_code") @db.Char(2)
+  periodTrackingEnabled Boolean  @default(false) @map("period_tracking_enabled")
+  /// When the person confirmed they are 18 or older.
+  ageConfirmedAt        DateTime @map("age_confirmed_at") @db.Timestamptz(6)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  consents ConsentRecord[]
+  checkIns CheckIn[]
+
+  @@map("profiles")
+}
+
+/// Append-only consent history. The current state of a consent is its newest row.
+model ConsentRecord {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  type      ConsentType
+  /// Version of the consent text the person agreed to (src/lib/consents.ts).
+  version   String      @db.VarChar(32)
+  granted   Boolean
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, createdAt(sort: Desc)])
+  @@map("consent_records")
+}
+
+/// Reference data: the symptoms a person can pick. Seeded by prisma/seed.ts.
+model SymptomType {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String  @unique @db.VarChar(64)
+  label     String  @db.VarChar(80)
+  sortOrder Int     @map("sort_order")
+  useInCheckIn Boolean @default(true) @map("use_in_check_in")
+  useInPeriods Boolean @default(false) @map("use_in_periods")
+
+  checkInSymptoms CheckInSymptom[]
+
+  @@map("symptom_types")
+}
+
+/// One check-in per user per calendar date (in the user's own time zone).
+model CheckIn {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  /// Calendar date in the user's time zone. Date only, no time.
+  date         DateTime @db.Date
+  /// 1 (very low) to 5 (great).
+  mood         Int      @db.SmallInt
+  /// 1 (very low) to 5 (high).
+  energy       Int      @db.SmallInt
+  /// Whole minutes, 0 to 1440. Null when the person did not record it.
+  sleepMinutes Int?     @map("sleep_minutes") @db.SmallInt
+  /// 1 (very poor) to 5 (great). Null when not recorded.
+  sleepQuality Int?     @map("sleep_quality") @db.SmallInt
+  /// 1 (very low) to 5 (very high). Higher means MORE stress.
+  stress       Int      @db.SmallInt
+  note         String?  @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symptoms CheckInSymptom[]
+
+  @@unique([userId, date])
+  @@index([userId, date(sort: Desc)])
+  @@map("check_ins")
+}
+
+model CheckInSymptom {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  checkInId     String   @map("check_in_id") @db.Uuid
+  symptomTypeId String   @map("symptom_type_id") @db.Uuid
+  severity      Severity
+  /// Only used when the symptom type is "other".
+  customLabel   String?  @map("custom_label") @db.VarChar(60)
+
+  checkIn     CheckIn     @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  symptomType SymptomType @relation(fields: [symptomTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([checkInId, symptomTypeId])
+  @@map("check_in_symptoms")
+}
+
+/// Fixed-window counters used to rate-limit sign-up, login, password reset and
+/// (later) AI and upload requests. `key` never contains a raw email address.
+model RateLimitHit {
+  key         String   @db.VarChar(200)
+  windowStart DateTime @map("window_start") @db.Timestamptz(6)
+  count       Int      @default(1)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+  @@map("rate_limit_hits")
+}
